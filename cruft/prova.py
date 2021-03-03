@@ -10,7 +10,7 @@ from oauth2client.file import Storage
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = 'credential.json'
-APPLICATION_NAME = 'cams'
+APPLICATION_NAME = 'configs'
 
 
 try:
