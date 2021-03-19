@@ -14,26 +14,18 @@ import local_manager
 import settings
 
 logger = logging.getLogger('cam_recording')
+n_files = None
 
-download_th = 3
 
-
-def bandwidth():
+def bandwidth(high_bdw):
     s = speedtest.Speedtest()
     s.get_servers()
     s.get_best_server()
     s.download()
     s.upload()
     res = s.results.dict()
-
     download_mbs = round(res["download"] / (10 ** 6), 2)
-    upload_mbs = round(res["upload"] / (10 ** 6), 2)
-    print('done', download_mbs, upload_mbs)
-    if download_mbs < download_th:
-        above_th = False
-    else:
-        print('above threshodl!!')
-        above_th = True
+    high_bdw[0] = (download_mbs / len(config_files)) >= settings.download_thhreshold
 
 
 def unpack(data):
@@ -42,46 +34,57 @@ def unpack(data):
 
 def start(data):
     cam_name, url, port, user, pwd, folder_id = unpack(data)
+    last_bdw_check = - float('inf')
 
-    above_th = False
-    last_exec = - float('inf')
+    # Lists are mutable objects. Not
+    # the most elegant way, but it works
+    # to change the variable in thread
+    high_bdw = [False]
 
     while True:
-
         video_name = "%s_%s" % (datetime.datetime.now().strftime('%Y%m%d%H%M'), cam_name)
         full_name = "{base_dir}/{cam_name}/{name}.{ext}".format(base_dir=settings.BASE_VIDEO_DIR,
                                                                 cam_name=cam_name,
                                                                 name=video_name,
                                                                 ext=settings.ext)
-
-        # If I am not in the allowed time range, pass
+        # If I am not the allowed time range, pass
         now = datetime.datetime.now()
-        # If bandwith is below a given threshold, pass
-        if not above_th:
-            last_threshold = 60
-        else:
-            last_threshold = 60 * 5
-        print('last threshold', last_threshold)
-        if settings.check_bandwidth and (time.time() - last_exec) > last_threshold:
-            print('executing bandwidth')
-            bandwidth_th = threading.Thread(name='%s_above_th' % video_name, target=bandwidth)
-            bandwidth_th.start()
-            print('result', above_th)
-            last_exec = time.time()
+        weekday = now.weekday()
+        hour = now.hour
 
-        if above_th:
-            # Recording
-            recording_th = threading.Thread(name='%s_locally_recording' % video_name, target=recording,
-                                            args=(url, user, pwd, port, full_name))
-            recording_th.start()
-            recording_th.join()
+        allowed_hours = settings.allowed_schedule.get(weekday)
+        if any(x <= hour <= y for x, y in allowed_hours):
+            # If bandwidth is below a given threshold,
+            # sleep for an higher time
+            # Otherwise launch
+            bdw_sleept = settings.sleep_time_high_bdw if high_bdw[0] else settings.sleep_time_not_high_bdw
+            if settings.check_bdw and (time.time() - last_bdw_check) > bdw_sleept:
+                bandwidth_th = threading.Thread(name='%s_above_th' % video_name,
+                                                target=bandwidth,
+                                                args=(high_bdw,))
+                bandwidth_th.start()
+                last_bdw_check = time.time()
 
-            # Drive saving and delete
-            threading.Thread(name='%s_drive_storing' % video_name, target=store_and_delete,
-                             args=(video_name, cam_name, full_name, folder_id)).start()
+            if high_bdw[0]:
+                # Recording
+                recording_th = threading.Thread(name='%s_locally_recording' % video_name,
+                                                target=recording,
+                                                args=(url, user, pwd, port, full_name))
+                recording_th.start()
+                recording_th.join()
+
+                # Drive saving and delete
+                threading.Thread(name='%s_drive_storing' % video_name,
+                                 target=store_and_delete,
+                                 args=(video_name, cam_name, full_name, folder_id)).start()
+            else:
+                logger.info('Bandwidth below threshold, sleeping for %s seconds',
+                            settings.sleep_time_not_high_bdw)
+                time.sleep(settings.sleep_time_not_high_bdw)
         else:
-            logger.info('Below bandwidth threshold, sleeping')
-            time.sleep(60)
+            logger.info('Not allowed recording time, sleeping for %s seconds',
+                        settings.sleep_time_not_allowed_time)
+            time.sleep(settings.sleep_time_not_allowed_time)
 
 
 def store_and_delete(video_name, cam_name, full_name, folder_id):
@@ -119,12 +122,15 @@ def recording(url, user, pwd, port, full_name, duration=False):
                                                                                            dim=settings.dimMB,
                                                                                            compr=settings.compression)
         logger.info('Ffmpeg Command: %s', ffmpeg_cmd)
-    subprocess.Popen(shlex.split(ffmpeg_cmd), stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(shlex.split(ffmpeg_cmd),
+                     stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL).communicate()
     logger.debug('Recording ended')
 
 
 if __name__ == '__main__':
-    for file in glob.glob(f'{settings.CONFIG_CAM_DIR}/229.json'):
+    config_files = glob.glob(f'{settings.CONFIG_CAM_DIR}/229.json')
+    for file in config_files:
         with open(file) as data_file:
             logger.info('Config file opened %s', file)
             threading.Thread(target=start, args=(json.load(data_file),)).start()
