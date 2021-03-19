@@ -31,20 +31,19 @@ dirs_to_clean = [LOGS_DIR] + VIDEO_DIRS
 clean_dirs(dirs_to_clean)
 
 # Bandwidth
-check_bdw = True
-download_thhreshold = 3
+check_bdw = False
+download_threshold = 3
 sleep_time_high_bdw = 60
 sleep_time_not_high_bdw = 60 * 5
 
 # Schedule time
-allowed_schedule = {0: ((0, 10), (21, 24)),
-                    1: ((0, 10), (22, 24)),
-                    2: ((0, 10), (22, 24)),
-                    3: ((0, 10), (22, 24)),
-                    4: ((0, 10), (22, 24)),
-                    5: ((0, 10), (22, 24)),
-                    6: ((0, 10), (22, 24)),
-                    7: ((0, 10), (22, 24))}
+allowed_schedule = {0: ((0, 10), (22, 23)),
+                    1: ((0, 10), (22, 23)),
+                    2: ((0, 10), (22, 23)),
+                    3: ((0, 10), (22, 23)),
+                    4: ((0, 10), (21, 23)),
+                    5: ((0, 10), (22, 23)),
+                    6: ((0, 10), (22, 23))}
 sleep_time_not_allowed_time = 60
 
 # Recording parameters
@@ -70,7 +69,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'simple': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            'format': '%(asctime)s - %(threadName)s - %(levelname)s - %(message)s'
         }
     },
     'handlers': {
