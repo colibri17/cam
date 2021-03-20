@@ -1,9 +1,10 @@
 import datetime
 import logging
+
 import httplib2
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaFileUpload
 from oauth2client.service_account import ServiceAccountCredentials
 
 import settings
@@ -23,7 +24,7 @@ class DriveManager:
         """
         logger.debug('Connecting')
         credentials = ServiceAccountCredentials.from_json_keyfile_name(settings.cred_name, scopes=settings.scopes)
-        http = credentials.authorize(httplib2.Http())
+        http = credentials.authorize(httplib2.Http(timeout=300))
         service = build('drive', 'v3', http=http, cache_discovery=False)
         logger.debug('Connected on Google Drive!')
         return service
@@ -43,7 +44,7 @@ class DriveManager:
             'parents': [folder_id]
         }
         media = MediaFileUpload(full_name, resumable=True)
-        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute(num_retries=4)
         logger.debug('Storing ended')
         logger.debug('File %s stored', file.get('id'))
 

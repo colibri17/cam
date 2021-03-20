@@ -93,9 +93,7 @@ def store(video_name, cam_name, full_name, folder_id):
         logger.info('full_name %s', full_name)
         local_man.delete_former_files(cam_name)
     except IOError as e:
-        logger.debug('Error %s', e)
-        logger.debug('Error, the file does not exist')
-
+        logger.warning('Error %s', e)
 
 def record(url, user, pwd, port, full_name, duration=None):
     logger.info('Start to record on file %s', full_name)
