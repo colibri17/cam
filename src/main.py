@@ -95,6 +95,7 @@ def store(video_name, cam_name, full_name, folder_id):
     except IOError as e:
         logger.warning('Error %s', e)
 
+
 def record(url, user, pwd, port, full_name, duration=None):
     logger.info('Start to record on file %s', full_name)
     # Recording the file with ffmpeg by using duration or dimension
