@@ -24,7 +24,7 @@ def bandwidth(high_bdw):
     s.upload()
     res = s.results.dict()
     download_mbs = round(res["download"] / (10 ** 6), 2)
-    high_bdw[0] = (download_mbs / len(config_files)) >= settings.download_threshold
+    high_bdw[0] = (download_mbs / len(config_cam_files)) >= settings.bdw_threshold
 
 
 def unpack(data):
@@ -96,15 +96,13 @@ def store(video_name, cam_name, full_name, folder_id):
         logger.warning('Error %s', e)
 
 
-def record(url, user, pwd, port, full_name, duration=None):
+def record(url, user, pwd, port, full_name):
     logger.info('Start to record on file %s', full_name)
-    # Recording the file with ffmpeg by using duration or dimension
-    lasting = f"-t {duration}" if duration else f"-fs {settings.dimMB}"
     ffmpeg_cmd = 'ffmpeg -i rtsp://{user}:{pwd}@{url}:{port} -vcodec libx264 ' \
-                 '-crf {compr} -acodec copy -y -f h264 {lasting} "{full_name}"'.format(user=user, pwd=pwd, url=url,
+                 '-crf {compr} -acodec copy -y -f h264 -fs {dim} "{full_name}"'.format(user=user, pwd=pwd, url=url,
                                                                                        port=port,
                                                                                        full_name=full_name,
-                                                                                       lasting=lasting,
+                                                                                       dim=settings.dimMB,
                                                                                        compr=settings.compression)
     logger.info('Ffmpeg Command: %s', ffmpeg_cmd)
     subprocess.Popen(shlex.split(ffmpeg_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).communicate()
@@ -112,11 +110,12 @@ def record(url, user, pwd, port, full_name, duration=None):
 
 
 if __name__ == '__main__':
-    config_files = glob.glob(f'{settings.CONFIG_CAM_DIR}/*.json')
+    config_cam_files = glob.glob(f'{settings.CONFIG_CAM_DIR}/*.json')
+
     drive_man = drive_manager.DriveManager()
     local_man = local_manager.LocalManager()
 
-    for file in config_files:
+    for file in config_cam_files:
         with open(file) as data_file:
             logger.info('Config file opened %s', file)
             threading.Thread(target=main, args=(json.load(data_file),)).start()

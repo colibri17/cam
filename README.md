@@ -1,8 +1,18 @@
 This Python library allows you to automatically record ip-cam videos on your Google Drive storage. 
 You are allowed to record videos from an arbitrary number of cams you might have installed on your local network. 
-The records are performed on the RSTP protocol.
+The records are performed on the RSTP protocol. 
+   
+The application has the intention to allow the user to be safer at home, being able
+to check recorded video remotely in a near-real time fashion.
 
-# Configuration
+# How it works
+The application uses [ffmpeg](https://www.ffmpeg.org/) to record videos from ip-cams connected to the local network.  
+The records are saved locally on the */video* path and then automatically loaded on Google Drive. If the storage amount  
+occupied by the videos exceeds a certain threshold, oldest video are identified and erased from the Google Drive 
+storage. The same occurs if the local video storage exceeds a certain (and by default much larger) threshold. This 
+allows to continuosly running the application without worrying of storage issues.
+
+# Install
 
 ### Install the cams
 The first step is to have installed the ip-cams you want to use on your local network.
@@ -53,9 +63,29 @@ This will tell to the program that there is a cam which we name 30 on the url 19
 the user is *admin_12345* and the password is *54321*. The videos should be saved on the google drive folder having id
 *123DvMivY_jUDoIUYNRPOLKQQbDQ*
 
-# Set up parameters
+### Set up the parameters
 The application can be customed according to different parameters. These can all be specified by modifying the YAML 
 file contained in the path *config/confs.yaml*. The following is a list of the parameters which can be changed, reported
 with their default values:
-* check_bdw = False: this specifies if the application should turn-off when the internet bandwidth is not large enough. 
-By default, when the cam is recording this option is disabled. Set true to enable it.
+* *check_bdw* : specifies if the application should turn-off when the internet bandwidth is not large enough. 
+By default, when the cam is recording this option is disabled (False). Set to true to enable it.
+* *bdw_threshold* : if the current internet bandwidth is below this threshold and *check_bdw* is set to True, the recording is not performed.
+In this case, the application sleeps for *sleep_time_not_high_bdw*. Instead, if this is not the case, the next bandwidth
+evaluation is performed after *sleep_time_high_bdw* seconds. By default the threshold is 3Mbit and the sleep times
+are respectively 300 and 60 seconds.  
+* *allowed_schedule* : specifies the allowed times in which the recording are performed and the local and google drive storing 
+are enabled. It is a dictionary which has the weekday (0 = Monday, .., 6 = Sunday) as key and the interval times as allowed values for recording.
+If the current time is not included in the allowed time range, the next evaluation to verify it the current time is allowed is 
+performed after *sleep_time_not_allowed_time* seconds. By default the allowed time ranges are every day 0-10am 
+and 10-12pm. The sleep time is set to 60 seconds
+* *ext* : specifies the file extension to be used by ffmpeg. By default it is set to *mp4*
+* *dimMB* : specifies the dimension of each recorded video in megabytes. By default it is set to 1 megabyte.
+* *compression* : specifies the video compression. By default is is set to 28.
+* *localLim*: specifies the local storage threshold after which oldest videos are removed. By default it is set to 1 gigabytes.
+* *driveLim*: specifies the drive storage threshold after which oldest videos are removed. By default it is set to 500 megabytes.
+
+# Execute
+The program can be easily executed on docker. Once you [installed](https://docs.docker.com/get-docker/) docker it is enough to run:
+```
+docker-compose up
+```

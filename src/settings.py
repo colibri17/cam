@@ -32,14 +32,14 @@ clean_dirs(dirs_to_clean)
 
 # Bandwidth
 check_bdw = False
-download_threshold = 3
+bdw_threshold = 3
 sleep_time_high_bdw = 60
 sleep_time_not_high_bdw = 60 * 5
 
 # Schedule time
 allowed_schedule = {0: (("00:00", "09:59"), ("22:00", "23:59")),
                     1: (("00:00", "09:59"), ("22:00", "23:59")),
-                    2: (("00:00", "09:59"), ("22:00", "23:59")),
+                    2: (("00:00", "19:59"), ("22:00", "23:59")),
                     3: (("00:00", "09:59"), ("22:00", "23:59")),
                     4: (("00:00", "09:59"), ("22:00", "23:59")),
                     5: (("00:00", "09:45"), ("22:00", "23:59")),
@@ -48,20 +48,16 @@ sleep_time_not_allowed_time = 60
 
 # Recording parameters
 ext = 'mp4'
-duration = 60
 dimMB = 1 * 1024 * 1024
 compression = 28
 
 # Local parameter
-localLim = 1024 * 1024 * 1024 * 20
-# localLim = 1024*1024*200
+localLim = 1024 * 1024 * 1024 * 1
+driveLim = 1024 * 1024 * 500
 
 # Driver parameters
 scopes = 'https://www.googleapis.com/auth/drive'
-# driveLim = 1024 * 1024 * 1024 * 4
-driveLim = 1024 * 1024 * 100
 cred_name = f'{CONFIG_CREDENTIALS_DIR}/credentials.json'
-# cred_name = 'credentialMu.json'
 
 
 LOGGING = {
