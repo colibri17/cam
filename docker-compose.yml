@@ -4,3 +4,4 @@ services:
     build: .
     volumes:
       - ./configs:/cam/configs
+      - ./video:/cam/video
