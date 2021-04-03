@@ -71,7 +71,7 @@ with their default values:
 By default, when the cam is recording this option is disabled (False). Set to true to enable it.
 * *bdw_threshold* : if the current internet bandwidth is below this threshold and *check_bdw* is set to True, the recording is not performed.
 In this case, the application sleeps for *sleep_time_not_high_bdw*. Instead, if this is not the case, the next bandwidth
-evaluation is performed after *sleep_time_high_bdw* seconds. By default the threshold is 3Mbit and the sleep times
+evaluation is performed after *sleep_time_high_bdw* seconds. By default the threshold is 4Mbit and the sleep times
 are respectively 300 and 60 seconds.  
 * *allowed_schedule* : specifies the allowed times in which the recording are performed and the local and google drive storing 
 are enabled. It is a dictionary which has the weekday (0 = Monday, .., 6 = Sunday) as key and the interval times as allowed values for recording.

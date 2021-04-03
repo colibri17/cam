@@ -31,8 +31,8 @@ dirs_to_clean = [LOGS_DIR] + VIDEO_DIRS
 clean_dirs(dirs_to_clean)
 
 # Bandwidth
-check_bdw = False
-bdw_threshold = 3
+check_bdw = True
+bdw_threshold = 4
 sleep_time_high_bdw = 60
 sleep_time_not_high_bdw = 60 * 5
 

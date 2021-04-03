@@ -24,7 +24,7 @@ def bandwidth(high_bdw):
     s.upload()
     res = s.results.dict()
     download_mbs = round(res["download"] / (10 ** 6), 2)
-    high_bdw[0] = (download_mbs / len(config_cam_files)) >= settings.bdw_threshold
+    high_bdw[0] = download_mbs >= settings.bdw_threshold
 
 
 def unpack(data):
