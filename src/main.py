@@ -77,12 +77,12 @@ def main(data):
                                  target=store,
                                  args=(recording_short_name, name, recording_full_name, folder_id)).start()
             else:
-                logger.info('Bandwidth below threshold, sleeping for %s seconds',
-                            settings.sleep_time_not_high_bdw)
+                logger.info('Bandwidth below threshold for %s, sleeping for %s seconds',
+                            name, settings.sleep_time_not_high_bdw)
                 time.sleep(settings.sleep_time_not_high_bdw)
         else:
-            logger.info('Not allowed recording time, sleeping for %s seconds',
-                        settings.sleep_time_not_allowed_time)
+            logger.info('Not allowed recording time for %s, sleeping for %s seconds',
+                        name, settings.sleep_time_not_allowed_time)
             time.sleep(settings.sleep_time_not_allowed_time)
 
 
